@@ -27,6 +27,8 @@ import bouncer from './plugins/bouncer';
 import errorHandling from './plugins/error-handling';
 import csrf from './plugins/csrf';
 import notFound from './plugins/not-found';
+import shadowCapture from './plugins/shadow-capture';
+
 import * as publicRoutes from './routes/public';
 import * as protectedRoutes from './routes/protected';
 
@@ -35,7 +37,8 @@ import {
   EMAIL_PROVIDER,
   FCC_ENABLE_DEV_LOGIN_MODE,
   FCC_ENABLE_SWAGGER_UI,
-  FREECODECAMP_NODE_ENV
+  FCC_ENABLE_SHADOW_CAPTURE,
+  FCC_ENABLE_EXAM_ENVIRONMENT
 } from './utils/env';
 import { isObjectID } from './utils/validation';
 import {
@@ -127,6 +130,10 @@ export const build = async (
     fastify.log.info(`Swagger UI available at ${API_LOCATION}/documentation`);
   }
 
+  if (FCC_ENABLE_SHADOW_CAPTURE) {
+    void fastify.register(shadowCapture);
+  }
+
   void fastify.register(auth);
   void fastify.register(notFound);
   void fastify.register(prismaPlugin);
@@ -180,8 +187,7 @@ export const build = async (
     }
   });
 
-  // NOTE: Code behind the `FREECODECAMP_NODE_ENV` var is not ready to be deployed yet.
-  if (FREECODECAMP_NODE_ENV !== 'production') {
+  if (FCC_ENABLE_EXAM_ENVIRONMENT) {
     void fastify.register(function (fastify, _opts, done) {
       fastify.addHook('onRequest', fastify.authorizeExamEnvironmentToken);
 
